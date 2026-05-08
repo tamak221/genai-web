@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/dads/Button';
 import { ErrorText } from '@/components/ui/dads/ErrorText';
 import { Input } from '@/components/ui/dads/Input';
 import { Label } from '@/components/ui/dads/Label';
+import { StatusBadge } from '@/components/ui/dads/StatusBadge';
 import { LoadingButton } from '@/components/ui/LoadingButton';
 import { APP_TITLE } from '@/constants';
 import { isApiError, teamApi } from '@/lib/fetcher';
@@ -19,8 +20,36 @@ type TikTokAnalyzeResponse = {
     shareCount: string;
     caption: string;
     analysisPrompt: string;
+    buzzPoints?: string[];
   };
 };
+
+type BuzzPoint = {
+  title: string;
+  detail: string;
+  tag: string;
+};
+
+const PRO_MOCK_BUZZ_POINTS: BuzzPoint[] = [
+  {
+    title: '冒頭2秒のフックが秀逸',
+    detail:
+      '最初のカットで「悩み→解決策」を即提示できており、スクロール停止率を押し上げる構成になっています。',
+    tag: '視聴維持',
+  },
+  {
+    title: 'ターゲットへの共感度が高い',
+    detail:
+      'キャプションに具体的な生活シーンが含まれ、視聴者が自分ごと化しやすい文脈になっています。',
+    tag: '共感設計',
+  },
+  {
+    title: 'シェアを誘発する実用性',
+    detail:
+      '「すぐ試せるノウハウ」が含まれているため、保存・共有行動に直結しやすいクリエイティブです。',
+    tag: '拡散性',
+  },
+];
 
 export const TiktokAnalyzer = () => {
   const navigate = useNavigate();
@@ -28,6 +57,7 @@ export const TiktokAnalyzer = () => {
   const [selectedTeamId, setSelectedTeamId] = useState('');
   const [url, setUrl] = useState('');
   const [analysisPrompt, setAnalysisPrompt] = useState('');
+  const [buzzPoints, setBuzzPoints] = useState<BuzzPoint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingTeams, setIsLoadingTeams] = useState(false);
   const [error, setError] = useState('');
@@ -63,6 +93,11 @@ export const TiktokAnalyzer = () => {
   const isPremiumTeam = Boolean(selectedTeam?.isPremium);
   const showPremiumMessage = selectedTeamId !== '' && !isPremiumTeam;
 
+  const previewVideoId = useMemo(() => {
+    const match = url.match(/\/video\/(\d+)/);
+    return match?.[1] ?? null;
+  }, [url]);
+
   const handleAnalyze = async () => {
     if (!selectedTeamId || !url.trim()) {
       setError('チームとTikTok URLを入力してください。');
@@ -86,6 +121,14 @@ export const TiktokAnalyzer = () => {
         return;
       }
       setAnalysisPrompt(prompt);
+      const apiBuzzPoints = (res.data.outputs?.buzzPoints ?? [])
+        .slice(0, 3)
+        .map((point, index) => ({
+          title: `バズりポイント ${index + 1}`,
+          detail: point,
+          tag: ['視聴維持', '共感設計', '拡散性'][index] ?? '分析',
+        }));
+      setBuzzPoints(apiBuzzPoints.length > 0 ? apiBuzzPoints : PRO_MOCK_BUZZ_POINTS);
     } catch (e) {
       if (isApiError(e)) {
         if (e.status === 403) {
@@ -143,6 +186,24 @@ export const TiktokAnalyzer = () => {
             />
           </div>
 
+          {url.trim() && (
+            <div className='rounded-6 border border-dashed border-solid-gray-600 bg-solid-gray-50 p-4'>
+              <p className='mb-2 text-oln-16B-100'>動画プレビュー（プレースホルダー）</p>
+              <div className='grid min-h-52 place-content-center rounded-6 border border-solid-gray-420 bg-white text-center'>
+                <p className='text-dns-16N-130'>サムネイル表示エリア</p>
+                {previewVideoId ? (
+                  <p className='mt-1 text-oln-14N-100 text-solid-gray-700'>
+                    videoId: {previewVideoId}
+                  </p>
+                ) : (
+                  <p className='mt-1 text-oln-14N-100 text-solid-gray-700'>
+                    TikTok URLを解析してサムネイル連携予定
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
           {showPremiumMessage && (
             <ErrorText id='premium-plan-message'>
               この機能はプレミアムプラン限定です。アップグレードをご検討ください
@@ -169,6 +230,23 @@ export const TiktokAnalyzer = () => {
             <div className='mt-4 rounded-6 border border-solid-gray-420 p-4'>
               <p className='mb-2 text-oln-16B-100'>生成された分析プロンプト</p>
               <pre className='whitespace-pre-wrap text-dns-16N-130'>{analysisPrompt}</pre>
+
+              <div className='mt-6'>
+                <p className='mb-3 text-oln-16B-100'>AI分析結果: バズりポイント3つ</p>
+                <div className='grid gap-3 lg:grid-cols-3'>
+                  {buzzPoints.slice(0, 3).map((point, index) => (
+                    <article
+                      key={`${point.title}-${index}`}
+                      className='rounded-8 border border-solid-gray-420 bg-white p-4 shadow-1'
+                    >
+                      <StatusBadge className='mb-2'>{point.tag}</StatusBadge>
+                      <h3 className='mb-2 text-dns-17B-130'>{point.title}</h3>
+                      <p className='text-dns-16N-130'>{point.detail}</p>
+                    </article>
+                  ))}
+                </div>
+              </div>
+
               <div className='mt-4'>
                 <Button
                   variant='outline'
