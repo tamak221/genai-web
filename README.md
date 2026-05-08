@@ -116,3 +116,4 @@ Amazon Web Services (AWS) 社製オープンソース [Generative AI Use Cases (
     の対象となります。
   - 対象ファイル一覧は [ASL対象ファイル.md](./docs/ASL対象ファイル.md) を参照してください。
 - Documentation: Licensed under the [Creative Commons Attribution 4.0 International License](LICENSE-CC-BY) (CC BY 4.0).
+工房のセットアップ完了！
