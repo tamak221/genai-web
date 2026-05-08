@@ -30,6 +30,11 @@ export interface BackendApiProps {
   crossAccountBedrockRoleArn?: string | null;
   s3FileExpirationDays: number;
   dynamoDbTtlDays: number;
+  tiktokAnalyzerEnabled: boolean;
+  tiktokAnalyzerDefaultTimeoutMs: number;
+  tiktokAnalyzerMaxTimeoutMs: number;
+  tiktokAnalyzerApiKeySecretArn?: string;
+  tiktokAnalyzerPremiumFeatureFlagKey: string;
 
   // Inference Profile mappings for cost allocation tagging
   inferenceProfileMap?: { [modelId: string]: string };
@@ -78,7 +83,6 @@ export class Api extends Construct {
       teamAdminRole,
       userRole,
     } = props;
-
     // Validate Model Names
     for (const modelId of modelIds) {
       if (!BEDROCK_TEXT_MODELS.includes(modelId)) {
@@ -197,6 +201,33 @@ export class Api extends Construct {
       },
     });
     authenticatedRole.grant(optimizePromptFunction.role!, 'lambda:InvokeFunction');
+
+    const invokeTikTokAnalyzerFunction = new NodejsFunction(this, 'InvokeTikTokAnalyzer', {
+      runtime: Runtime.NODEJS_22_X,
+      entry: './lambda/invokeTikTokAnalyzer.ts',
+      timeout: Duration.minutes(15),
+      environment: {
+        TABLE_NAME: table.tableName,
+        EXAPP_TABLE_NAME: table.tableName,
+        INVOKE_HISTORY_TABLE_NAME: table.tableName,
+        TIKTOK_ANALYZER_DEFAULT_TIMEOUT_MS: String(props.tiktokAnalyzerDefaultTimeoutMs),
+        TIKTOK_ANALYZER_MAX_TIMEOUT_MS: String(props.tiktokAnalyzerMaxTimeoutMs),
+        TIKTOK_ANALYZER_PREMIUM_FEATURE_FLAG_KEY: props.tiktokAnalyzerPremiumFeatureFlagKey,
+        ...(props.tiktokAnalyzerApiKeySecretArn
+          ? { TIKTOK_ANALYZER_API_KEY_SECRET_ARN: props.tiktokAnalyzerApiKeySecretArn }
+          : {}),
+      },
+    });
+    table.grantReadData(invokeTikTokAnalyzerFunction);
+    if (props.tiktokAnalyzerApiKeySecretArn) {
+      invokeTikTokAnalyzerFunction.addToRolePolicy(
+        new PolicyStatement({
+          effect: Effect.ALLOW,
+          actions: ['secretsmanager:GetSecretValue', 'secretsmanager:DescribeSecret'],
+          resources: [props.tiktokAnalyzerApiKeySecretArn],
+        }),
+      );
+    }
 
     // SageMaker Endpoint がある場合は権限付与
     if (endpointNames.length > 0) {
@@ -595,6 +626,17 @@ export class Api extends Construct {
       new LambdaIntegration(generateImageFunction),
       commonAuthorizerProps,
     );
+
+    if (props.tiktokAnalyzerEnabled) {
+      const tiktokResource = api.root.addResource('tiktok');
+      const tiktokAnalyzeResource = tiktokResource.addResource('analyze');
+      // POST: /tiktok/analyze
+      tiktokAnalyzeResource.addMethod(
+        'POST',
+        new LambdaIntegration(invokeTikTokAnalyzerFunction),
+        commonAuthorizerProps,
+      );
+    }
 
     const fileResource = api.root.addResource('file');
     const urlResource = fileResource.addResource('url');

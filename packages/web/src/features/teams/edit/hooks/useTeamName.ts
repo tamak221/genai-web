@@ -5,5 +5,6 @@ export const useTeamName = () => {
 
   return {
     teamName: team?.teamName ?? '',
+    isPremium: team?.isPremium ?? false,
   };
 };

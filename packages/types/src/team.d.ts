@@ -7,12 +7,14 @@ export type GroupName = 'SystemAdminGroup' | 'TeamAdminGroup' | 'UserGroup';
 export type Team = {
   teamId: string;
   teamName: string;
+  isPremium?: boolean;
   createdDate: string;
   updatedDate: string;
 };
 
 export type UpdateTeamRequest = {
   teamName: string;
+  isPremium?: boolean;
 };
 
 export type CreateTeamRequest = UpdateTeamRequest & {

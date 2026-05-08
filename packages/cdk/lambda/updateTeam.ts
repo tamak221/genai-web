@@ -16,7 +16,7 @@ export const handler = createApiHandler(async (event) => {
 
   const req = parseRequestBody(updateTeamSchema, event.body!);
 
-  const team = await updateTeam(teamId, req.teamName);
+  const team = await updateTeam(teamId, req.teamName, req.isPremium);
 
   return { statusCode: 200, body: team };
 });

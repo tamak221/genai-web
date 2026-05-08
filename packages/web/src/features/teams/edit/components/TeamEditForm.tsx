@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router';
 import { ErrorText } from '@/components/ui/dads/ErrorText';
+import { Checkbox } from '@/components/ui/dads/Checkbox';
 import { Input } from '@/components/ui/dads/Input';
 import { Label } from '@/components/ui/dads/Label';
 import { RequirementBadge } from '@/components/ui/dads/RequirementBadge';
@@ -17,7 +18,7 @@ export const TeamEditForm = () => {
   const navigate = useNavigate();
 
   const { teamId } = useParams();
-  const { teamName } = useTeamName();
+  const { teamName, isPremium } = useTeamName();
   const { updateTeam, mutateTeams } = useUpdateTeam();
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -31,6 +32,7 @@ export const TeamEditForm = () => {
     resolver: zodResolver(teamUpdateSchema),
     values: {
       name: teamName,
+      isPremium,
     },
   });
 
@@ -40,6 +42,7 @@ export const TeamEditForm = () => {
       setIsLoading(true);
       await updateTeam(teamId ?? '', {
         teamName: data.name,
+        isPremium: data.isPremium,
       });
       await mutateTeams();
       navigate('/teams');
@@ -71,6 +74,14 @@ export const TeamEditForm = () => {
           {...register('name')}
         />
         {errors.name && <ErrorText id={`team-edit-name-error`}>＊{errors.name.message}</ErrorText>}
+      </div>
+      <div className='flex flex-col gap-1.5'>
+        <Label htmlFor='team-edit-is-premium' size='lg'>
+          プラン設定
+        </Label>
+        <Checkbox id='team-edit-is-premium' {...register('isPremium')}>
+          Premiumプラン
+        </Checkbox>
       </div>
 
       {error && (

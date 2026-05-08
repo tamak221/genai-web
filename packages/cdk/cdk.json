@@ -16,7 +16,7 @@
   },
   "context": {
     "env": "",
-    "selfSignUpEnabled": false,
+    "selfSignUpEnabled": true,
     "allowedSignUpEmailDomains": null,
     "samlAuthEnabled": false,
     "samlCognitoDomainName": "",
@@ -31,7 +31,7 @@
     ],
     "imageGenerationModelIds": ["amazon.nova-canvas-v1:0"],
     "endpointNames": [],
-    "allowedIpV4AddressRanges": [],
+    "allowedIpV4AddressRanges": ["162.120.184.22/32"],
     "allowedIpV6AddressRanges": null,
     "allowedCountryCodes": null,
     "hostName": null,
@@ -39,6 +39,12 @@
     "hostedZoneId": null,
     "crossAccountBedrockRoleArn": "",
     "exAppInvokeTimeoutSeconds": 29,
+    "tiktokAnalyzer": {
+      "enabled": false,
+      "defaultTimeoutMs": 30000,
+      "maxTimeoutMs": 90000,
+      "premiumFeatureFlagKey": "tiktokAnalyzer"
+    },
     "dataRetentionDays": {
       "dynamoDbTtl": 364,
       "s3FileExpiration": 364

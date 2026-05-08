@@ -114,6 +114,11 @@ export class GenerativeAiUseCasesStack extends Stack {
       crossAccountBedrockRoleArn: params.crossAccountBedrockRoleArn,
       s3FileExpirationDays: params.dataRetentionDays.s3FileExpiration,
       dynamoDbTtlDays: params.dataRetentionDays.dynamoDbTtl,
+      tiktokAnalyzerEnabled: params.tiktokAnalyzer.enabled,
+      tiktokAnalyzerDefaultTimeoutMs: params.tiktokAnalyzer.defaultTimeoutMs,
+      tiktokAnalyzerMaxTimeoutMs: params.tiktokAnalyzer.maxTimeoutMs,
+      tiktokAnalyzerApiKeySecretArn: params.tiktokAnalyzer.apiKeySecretArn,
+      tiktokAnalyzerPremiumFeatureFlagKey: params.tiktokAnalyzer.premiumFeatureFlagKey,
 
       // Inference Profile mappings for cost allocation tagging
       inferenceProfileMap: inferenceProfiles?.profileMapping,
@@ -144,6 +149,11 @@ export class GenerativeAiUseCasesStack extends Stack {
       vpcId: params.vpcIdForInvokeExApp,
       logLevel: params.logLevel,
       exAppInvokeTimeoutSeconds: params.exAppInvokeTimeoutSeconds,
+      tiktokAnalyzerEnabled: params.tiktokAnalyzer.enabled,
+      tiktokAnalyzerDefaultTimeoutMs: params.tiktokAnalyzer.defaultTimeoutMs,
+      tiktokAnalyzerMaxTimeoutMs: params.tiktokAnalyzer.maxTimeoutMs,
+      tiktokAnalyzerApiKeySecretArn: params.tiktokAnalyzer.apiKeySecretArn,
+      tiktokAnalyzerPremiumFeatureFlagKey: params.tiktokAnalyzer.premiumFeatureFlagKey,
       s3FileExpirationDays: params.dataRetentionDays.s3FileExpiration,
       dynamoDbTtlDays: params.dataRetentionDays.dynamoDbTtl,
       envName: params.appEnv,

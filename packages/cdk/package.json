@@ -44,9 +44,11 @@
     "@cdklabs/deploy-time-build": "^0.1.2",
     "@smithy/protocol-http": "^5.3.13",
     "@smithy/signature-v4": "^5.3.13",
+    "@sparticuz/chromium": "^148.0.0",
     "aws-cdk-lib": "^2.248.0",
     "aws-jwt-verify": "^5.1.1",
     "cdk-nag": "^2.37.55",
-    "constructs": "^10.6.0"
+    "constructs": "^10.6.0",
+    "playwright-core": "^1.59.1"
   }
 }

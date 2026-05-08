@@ -25,6 +25,7 @@ import { isUseCaseEnabled } from '@/utils/isUseCaseEnabled';
 import { Layout } from './layout/Layout';
 import { AuthErrorPage } from './pages/AuthErrorPage';
 import { SignedOutPage } from './pages/SignedOutPage';
+import { TiktokAnalyzer } from './pages/TiktokAnalyzer';
 
 export const createRoutes = (): RouteObject[] => {
   return [
@@ -49,6 +50,10 @@ export const createRoutes = (): RouteObject[] => {
         {
           path: 'chat',
           element: <ChatPage />,
+        },
+        {
+          path: 'tiktok-analyzer',
+          element: <TiktokAnalyzer />,
         },
         {
           path: 'chat/:chatId',

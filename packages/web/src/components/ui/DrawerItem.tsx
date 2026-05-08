@@ -1,14 +1,16 @@
+import { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router';
 
 export type DrawerItemProps = {
   className?: string;
   label: string;
   to: string;
+  icon?: ReactNode;
   disableParentAriaCurrent?: boolean;
 };
 
 export const DrawerItem = (props: DrawerItemProps) => {
-  const { className, label, to, disableParentAriaCurrent } = props;
+  const { className, label, to, icon, disableParentAriaCurrent } = props;
   const location = useLocation();
 
   // NOTE:
@@ -32,7 +34,10 @@ export const DrawerItem = (props: DrawerItemProps) => {
       to={to}
     >
       <div className='flex w-full items-center justify-between'>
-        <span>{label}</span>
+        <span className='inline-flex items-center gap-2'>
+          {icon ? <span aria-hidden={true}>{icon}</span> : null}
+          <span>{label}</span>
+        </span>
       </div>
     </Link>
   );

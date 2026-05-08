@@ -21,6 +21,11 @@ interface TeamAccessControlStackProps extends NestedStackProps {
   vpcId: string | undefined;
   logLevel: StackInput['logLevel'];
   exAppInvokeTimeoutSeconds: number;
+  tiktokAnalyzerEnabled: boolean;
+  tiktokAnalyzerDefaultTimeoutMs: number;
+  tiktokAnalyzerMaxTimeoutMs: number;
+  tiktokAnalyzerApiKeySecretArn?: string;
+  tiktokAnalyzerPremiumFeatureFlagKey: string;
   s3FileExpirationDays: number;
   dynamoDbTtlDays: number;
   envName?: string;
@@ -48,6 +53,11 @@ export class TeamAccessControlStack extends NestedStack {
       vpcId: props.vpcId,
       logLevel: props.logLevel,
       exAppInvokeTimeoutSeconds: props.exAppInvokeTimeoutSeconds,
+      tiktokAnalyzerEnabled: props.tiktokAnalyzerEnabled,
+      tiktokAnalyzerDefaultTimeoutMs: props.tiktokAnalyzerDefaultTimeoutMs,
+      tiktokAnalyzerMaxTimeoutMs: props.tiktokAnalyzerMaxTimeoutMs,
+      tiktokAnalyzerApiKeySecretArn: props.tiktokAnalyzerApiKeySecretArn,
+      tiktokAnalyzerPremiumFeatureFlagKey: props.tiktokAnalyzerPremiumFeatureFlagKey,
       s3FileExpirationDays: props.s3FileExpirationDays,
       dynamoDbTtlDays: props.dynamoDbTtlDays,
       envName: props.envName,

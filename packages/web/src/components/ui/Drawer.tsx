@@ -49,7 +49,12 @@ export const Drawer = (props: Props) => {
               ))}
             {items.map((item) => (
               <li key={`${item.label}-${item.to}`}>
-                <DrawerItem label={item.label} to={item.to} />
+                <DrawerItem
+                  label={item.label}
+                  to={item.to}
+                  icon={item.icon}
+                  disableParentAriaCurrent={item.disableParentAriaCurrent}
+                />
               </li>
             ))}
           </ul>

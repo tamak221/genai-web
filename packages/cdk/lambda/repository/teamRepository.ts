@@ -13,6 +13,7 @@ const itemToTeam = (item: Record<string, any>): Team => {
   return {
     teamId: item.pk.split('#')[1],
     teamName: item.teamName,
+    isPremium: Boolean(item.isPremium),
     createdDate: item.createdDate,
     updatedDate: item.updatedDate,
   };
@@ -25,6 +26,7 @@ export const createTeam = async (_teamName: string): Promise<Team> => {
     pk: teamId,
     sk: 'team',
     teamName: _teamName,
+    isPremium: false,
     createdDate: now,
     updatedDate: now,
   };
@@ -57,6 +59,30 @@ export const findTeamById = async (_teamId: string): Promise<Team | null> => {
   } else {
     return itemToTeam(res.Items[0]);
   }
+};
+
+export const findTeamPremiumStatusById = async (_teamId: string): Promise<boolean> => {
+  const rawTeam = await findRawTeamById(_teamId);
+  if (!rawTeam) {
+    return false;
+  }
+
+  const premiumAttr = rawTeam.isPremium;
+  if (!premiumAttr) {
+    return false;
+  }
+
+  if ('BOOL' in premiumAttr && typeof premiumAttr.BOOL === 'boolean') {
+    return premiumAttr.BOOL;
+  }
+  if ('N' in premiumAttr) {
+    return premiumAttr.N === '1';
+  }
+  if ('S' in premiumAttr) {
+    return typeof premiumAttr.S === 'string' && premiumAttr.S.toLowerCase() === 'true';
+  }
+
+  return false;
 };
 
 export const findRawTeamById = async (
@@ -210,8 +236,28 @@ export const listTeamIdByAdminId = async (
   };
 };
 
-export const updateTeam = async (_teamId: string, _teamName: string): Promise<Team> => {
+export const updateTeam = async (
+  _teamId: string,
+  _teamName: string,
+  _isPremium?: boolean,
+): Promise<Team> => {
   const teamId = getTeamId(_teamId);
+
+  const expressionAttributeNames: Record<string, string> = {
+    '#teamName': 'teamName',
+    '#updatedDate': 'updatedDate',
+  };
+  const expressionAttributeValues: Record<string, string | number | boolean> = {
+    ':teamName': _teamName,
+    ':updatedDate': Date.now(),
+  };
+  let updateExpression = 'set #teamName = :teamName, #updatedDate = :updatedDate';
+
+  if (typeof _isPremium === 'boolean') {
+    expressionAttributeNames['#isPremium'] = 'isPremium';
+    expressionAttributeValues[':isPremium'] = _isPremium;
+    updateExpression += ', #isPremium = :isPremium';
+  }
 
   const res = await dynamoDbDocument.send(
     new UpdateCommand({
@@ -220,11 +266,9 @@ export const updateTeam = async (_teamId: string, _teamName: string): Promise<Te
         pk: teamId,
         sk: 'team',
       },
-      UpdateExpression: 'set teamName = :teamName, updatedDate = :updatedDate',
-      ExpressionAttributeValues: {
-        ':teamName': _teamName,
-        ':updatedDate': Date.now(),
-      },
+      UpdateExpression: updateExpression,
+      ExpressionAttributeNames: expressionAttributeNames,
+      ExpressionAttributeValues: expressionAttributeValues,
       ReturnValues: 'ALL_NEW',
     }),
   );

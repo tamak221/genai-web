@@ -192,6 +192,24 @@ export const stackInputSchema = z
     // ExApp API Timeout Configuration
     exAppInvokeTimeoutSeconds: z.number().min(3).max(300).default(29),
 
+    // TikTok Analyzer Configuration
+    tiktokAnalyzer: z
+      .object({
+        enabled: z.boolean().default(false),
+        defaultTimeoutMs: z.number().min(1_000).max(300_000).default(30_000),
+        maxTimeoutMs: z.number().min(1_000).max(300_000).default(90_000),
+        // APIキーをSecrets Managerで参照する場合のARN
+        apiKeySecretArn: z.string().optional(),
+        // 有料機能フラグ（フロント/バック双方で参照できるよう context で管理）
+        premiumFeatureFlagKey: z.string().default('tiktokAnalyzer'),
+      })
+      .default({
+        enabled: false,
+        defaultTimeoutMs: 30_000,
+        maxTimeoutMs: 90_000,
+        premiumFeatureFlagKey: 'tiktokAnalyzer',
+      }),
+
     // Data Retention Configuration
     dataRetentionDays: z
       .object({

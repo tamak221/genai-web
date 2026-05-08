@@ -48,6 +48,11 @@ interface TeamAccessControlProps {
   vpcId: string | undefined;
   logLevel: StackInput['logLevel'];
   exAppInvokeTimeoutSeconds: number;
+  tiktokAnalyzerEnabled: boolean;
+  tiktokAnalyzerDefaultTimeoutMs: number;
+  tiktokAnalyzerMaxTimeoutMs: number;
+  tiktokAnalyzerApiKeySecretArn?: string;
+  tiktokAnalyzerPremiumFeatureFlagKey: string;
   s3FileExpirationDays: number;
   dynamoDbTtlDays: number;
   envName?: string;
@@ -571,6 +576,36 @@ export class TeamAccessControl extends Construct {
       true,
     );
 
+    const invokeTikTokAnalyzerFunction = this.createTeamAccessControlFunction(
+      'InvokeTikTokAnalyzer',
+      './lambda/invokeTikTokAnalyzer.ts',
+      512,
+    );
+    invokeTikTokAnalyzerFunction.addEnvironment(
+      'TIKTOK_ANALYZER_DEFAULT_TIMEOUT_MS',
+      String(props.tiktokAnalyzerDefaultTimeoutMs),
+    );
+    invokeTikTokAnalyzerFunction.addEnvironment(
+      'TIKTOK_ANALYZER_MAX_TIMEOUT_MS',
+      String(props.tiktokAnalyzerMaxTimeoutMs),
+    );
+    invokeTikTokAnalyzerFunction.addEnvironment(
+      'TIKTOK_ANALYZER_PREMIUM_FEATURE_FLAG_KEY',
+      props.tiktokAnalyzerPremiumFeatureFlagKey,
+    );
+    if (props.tiktokAnalyzerApiKeySecretArn) {
+      invokeTikTokAnalyzerFunction.addEnvironment(
+        'TIKTOK_ANALYZER_API_KEY_SECRET_ARN',
+        props.tiktokAnalyzerApiKeySecretArn,
+      );
+      invokeTikTokAnalyzerFunction.addToRolePolicy(
+        new iam.PolicyStatement({
+          actions: ['secretsmanager:GetSecretValue', 'secretsmanager:DescribeSecret'],
+          resources: [props.tiktokAnalyzerApiKeySecretArn],
+        }),
+      );
+    }
+
     // GET /exapps/histories
     const listInvokeExAppHisotriesFunction = this.createTeamAccessControlFunction(
       'ListInvokeExAppHisotries',
@@ -805,6 +840,18 @@ export class TeamAccessControl extends Construct {
     exAppsResource
       .addResource('artifact-file')
       .addMethod('GET', new LambdaIntegration(getArtifactFileFunction), commonAuthorizerProps);
+
+    if (props.tiktokAnalyzerEnabled) {
+      // POST: /tiktok/analyze
+      const tiktokResource = api.root.addResource('tiktok');
+      tiktokResource.addResource('analyze').addMethod(
+        'POST',
+        new LambdaIntegration(invokeTikTokAnalyzerFunction, {
+          timeout: Duration.seconds(props.exAppInvokeTimeoutSeconds),
+        }),
+        commonAuthorizerProps,
+      );
+    }
 
     this.api = api;
 
